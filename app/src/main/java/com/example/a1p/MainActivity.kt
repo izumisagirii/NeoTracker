@@ -9,11 +9,12 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -28,6 +29,7 @@ import com.example.a1p.ui.theme.A1pTheme
 
 class GlobalData {
     companion object {
+        lateinit var activity : ComponentActivity
         val signalRec = SignalRec()
         val buttonColor = mutableStateOf(Color.Green)
         val buttonText = mutableStateOf("Start Recording")
@@ -40,6 +42,7 @@ class GlobalData {
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        GlobalData.activity = this
         setContent {
             A1pTheme {
                 // A surface container using the 'background' color from the theme
@@ -98,7 +101,9 @@ fun onClick() {
         GlobalData.buttonText.value = "Start Recording"
         GlobalData.ifRecording = false
     } else {
-        GlobalData.signalRec.start()
+        if(!GlobalData.signalRec.start()){
+            return
+        }
         GlobalData.timeCounter.start()
         GlobalData.buttonColor.value = Color.Red
         GlobalData.buttonText.value = "!Stop Recording"
@@ -113,3 +118,13 @@ fun GreetingPreview() {
         Greeting("NeoTracker")
     }
 }
+//@Composable
+//fun getActivity(): ComponentActivity? {
+//    val activity = LocalContext.current
+//    fun Context.getActivity(): ComponentActivity? = when (this) {
+//        is ComponentActivity -> this
+//        is ContextWrapper -> baseContext.getActivity()
+//        else -> null
+//    }
+//    return  activity.getActivity()
+//}
