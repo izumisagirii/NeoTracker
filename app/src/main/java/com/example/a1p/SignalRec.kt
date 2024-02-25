@@ -120,14 +120,16 @@ open class SignalRec {
         recorder = AudioRecord(
             MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE
         )
-        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG,AUDIO_FORMAT)
-        var buffer = ByteArray(bufferSize)
+//        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG,AUDIO_FORMAT)
+        val buffer = ByteArray(BUFFER_SIZE)
         val outputStream = ByteArrayOutputStream()
 
         recorder.startRecording()
+        RUNNING = true
         handler.post(object : Runnable {
             override fun run() {
-                val read = recorder.read(buffer, 0, bufferSize)
+                val read = recorder.read(buffer, 0, BUFFER_SIZE)
+//                Log.d("bufferSize","$BUFFER_SIZE")
                 outputStream.write(buffer, 0, read)
                 if (RUNNING) {
                     handler.postDelayed(this, UPDATE_INTERVAL)
