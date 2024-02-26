@@ -7,7 +7,7 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-AAssetManager* mgr = NULL;  // 获取 AAssetManager
+AAssetManager *mgr = NULL;  // 获取 AAssetManager
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_a1p_TestLayer_00024Companion_SetAssetManager(JNIEnv *env, jobject thiz,
@@ -63,19 +63,19 @@ std::vector<Complex> SeqGenerate::jsonToComplexArray(std::string json) {
     if (!success) {
         raise(SIGFPE);
     }
-    for (const auto& elem : json_val) {
+    for (const auto &elem: json_val) {
         double real = elem["real"].asDouble();
         double imag = elem["imag"].asDouble();
-        _array.push_back(Complex(real,imag));
+        _array.push_back(Complex(real, imag));
     }
     return _array;
 }
 
 std::string SeqGenerate::readJsonFromAssets(std::string fileName) {
-    AAsset* asset = AAssetManager_open(mgr, fileName.c_str(), AASSET_MODE_BUFFER);
+    AAsset *asset = AAssetManager_open(mgr, fileName.c_str(), AASSET_MODE_BUFFER);
     if (asset) {
         size_t dataFileSize = AAsset_getLength(asset);
-        char* buffer = (char*)malloc(dataFileSize);
+        char *buffer = (char *) malloc(dataFileSize);
         memset(buffer, 0x00, dataFileSize);
         AAsset_read(asset, buffer, dataFileSize);
         AAsset_close(asset);
@@ -89,10 +89,10 @@ std::string SeqGenerate::readJsonFromAssets(std::string fileName) {
 void SeqGenerate::generateCarrierArray(int fc) {
     multiplyArray = std::vector<Complex>(48000);
     for (int i = 0; i < 48000; i++) {
-        double radians = 2 * i * M_PI * (double (fc) / 48000.0);
+        double radians = 2 * i * M_PI * (double(fc) / 48000.0);
         double cosValue = cos(radians);
         double sinValue = sin(radians);
-        multiplyArray[i] = Complex(cosValue,sinValue);
+        multiplyArray[i] = Complex(cosValue, sinValue);
     }
 }
 
