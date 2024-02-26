@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.media.AudioFormat
 import android.media.AudioRecord
+import android.media.AudioTrack
 import android.media.MediaRecorder
 import android.os.Handler
 import android.os.Looper
@@ -22,13 +23,16 @@ open class SignalRec {
     private val CHANNEL_CONFIG = AudioFormat.CHANNEL_IN_MONO
     private val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
     private val BUFFER_SIZE =
-        AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT) // 缓冲区大小
-    private val FRAME_LENGTH = 512
-    private val WAV_HEADER_SIZE = 44
+        AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+    private val BUFFER_SIZE_PLAYER = AudioTrack.getMinBufferSize(SAMPLE_RATE,CHANNEL_CONFIG,AUDIO_FORMAT)
+//    private val FRAME_LENGTH = 512
+//    private val WAV_HEADER_SIZE = 44
     private val UPDATE_INTERVAL = 5L
     private var RUNNING = true
     private lateinit var recorder: AudioRecord
+//    private lateinit var player: AudioTrack
     private val handler: Handler = Handler(Looper.getMainLooper())
+//    private val handler_play: Handler = Handler(Looper.getMainLooper())
 
     private class WavHeader(
         val sampleRate: Int,
@@ -36,40 +40,25 @@ open class SignalRec {
         val channels: Int,
         val audioDataSize: Int
     ) {
-        // 计算一些参数
         val byteRate = sampleRate * channels * bitsPerSample / 8
         val blockAlign = channels * bitsPerSample / 8
         val chunkSize = 36 + audioDataSize
         val subChunk1Size = 16
         val audioFormat = 1
 
-        // 将wav文件头写入输出流
         fun write(outputStream: FileOutputStream) {
-            // 写入RIFF标识
             writeString(outputStream, "RIFF")
-            // 写入块大小
             writeInt(outputStream, chunkSize)
-            // 写入WAVE标识
             writeString(outputStream, "WAVE")
-            // 写入fmt标识
             writeString(outputStream, "fmt ")
-            // 写入子块1大小
             writeInt(outputStream, subChunk1Size)
-            // 写入音频格式
             writeShort(outputStream, audioFormat.toShort())
-            // 写入声道数
             writeShort(outputStream, channels.toShort())
-            // 写入采样率
             writeInt(outputStream, sampleRate)
-            // 写入比特率
             writeInt(outputStream, byteRate)
-            // 写入块对齐
             writeShort(outputStream, blockAlign.toShort())
-            // 写入采样位数
             writeShort(outputStream, bitsPerSample.toShort())
-            // 写入data标识
             writeString(outputStream, "data")
-            // 写入音频数据大小
             writeInt(outputStream, audioDataSize)
         }
 
@@ -86,7 +75,6 @@ open class SignalRec {
             outputStream.write(value shr 24 and 0xFF)
         }
 
-        // 将一个短整数写入输出流，使用小端字节序
         private fun writeShort(outputStream: FileOutputStream, value: Short) {
             outputStream.write(value.toInt() and 0xFF)
             outputStream.write(value.toInt() shr 8 and 0xFF)
@@ -97,10 +85,22 @@ open class SignalRec {
 
     }
 
+    private external fun startPlayback()
+    private external fun stopPlayback()
     fun start(): Boolean {
         Log.d("SignalRec", "Start")
 
-
+        /*
+        ＲＲＲＲ　　　ＥＥＥＥＥ　　　ＣＣＣ　　　　ＯＯＯ　　　ＲＲＲＲ　　　ＤＤＤＤ
+        Ｒ　　　Ｒ　　Ｅ　　　　　　Ｃ　　　Ｃ　　Ｏ　　　Ｏ　　Ｒ　　　Ｒ　　Ｄ　　　Ｄ
+        Ｒ　　　Ｒ　　Ｅ　　　　　　Ｃ　　　Ｃ　　Ｏ　　　Ｏ　　Ｒ　　　Ｒ　　Ｄ　　　Ｄ
+        Ｒ　　　Ｒ　　Ｅ　　　　　　Ｃ　　　　　　Ｏ　　　Ｏ　　Ｒ　　　Ｒ　　Ｄ　　　Ｄ
+        ＲＲＲＲ　　　ＥＥＥＥＥ　　Ｃ　　　　　　Ｏ　　　Ｏ　　ＲＲＲＲ　　　Ｄ　　　Ｄ
+        Ｒ　　Ｒ　　　Ｅ　　　　　　Ｃ　　　　　　Ｏ　　　Ｏ　　Ｒ　　Ｒ　　　Ｄ　　　Ｄ
+        Ｒ　　　Ｒ　　Ｅ　　　　　　Ｃ　　　Ｃ　　Ｏ　　　Ｏ　　Ｒ　　　Ｒ　　Ｄ　　　Ｄ
+        Ｒ　　　Ｒ　　Ｅ　　　　　　Ｃ　　　Ｃ　　Ｏ　　　Ｏ　　Ｒ　　　Ｒ　　Ｄ　　　Ｄ
+        Ｒ　　　Ｒ　　ＥＥＥＥＥ　　　ＣＣＣ　　　　ＯＯＯ　　　Ｒ　　　Ｒ　　ＤＤＤＤ
+         */
 
         if (ActivityCompat.checkSelfPermission(
                 GlobalData.activity, Manifest.permission.RECORD_AUDIO
@@ -124,8 +124,51 @@ open class SignalRec {
         val buffer = ByteArray(BUFFER_SIZE)
         val outputStream = ByteArrayOutputStream()
 
+//        /*
+//        ＰＰＰＰ　　　Ｌ　　　　　　　　Ａ　　　　Ｙ　　　Ｙ　　ＥＥＥＥＥ　　ＲＲＲＲ
+//        Ｐ　　　Ｐ　　Ｌ　　　　　　　　Ａ　　　　Ｙ　　　Ｙ　　Ｅ　　　　　　Ｒ　　　Ｒ
+//        Ｐ　　　Ｐ　　Ｌ　　　　　　　Ａ　Ａ　　　Ｙ　　　Ｙ　　Ｅ　　　　　　Ｒ　　　Ｒ
+//        Ｐ　　　Ｐ　　Ｌ　　　　　　　Ａ　Ａ　　　　Ｙ　Ｙ　　　Ｅ　　　　　　Ｒ　　　Ｒ
+//        ＰＰＰＰ　　　Ｌ　　　　　　　Ａ　Ａ　　　　Ｙ　Ｙ　　　ＥＥＥＥＥ　　ＲＲＲＲ
+//        Ｐ　　　　　　Ｌ　　　　　　　ＡＡＡ　　　　　Ｙ　　　　Ｅ　　　　　　Ｒ　　Ｒ
+//        Ｐ　　　　　　Ｌ　　　　　　Ａ　　　Ａ　　　　Ｙ　　　　Ｅ　　　　　　Ｒ　　　Ｒ
+//        Ｐ　　　　　　Ｌ　　　　　　Ａ　　　Ａ　　　　Ｙ　　　　Ｅ　　　　　　Ｒ　　　Ｒ
+//        Ｐ　　　　　　ＬＬＬＬＬ　　Ａ　　　Ａ　　　　Ｙ　　　　ＥＥＥＥＥ　　Ｒ　　　Ｒ
+//         */
+//
+//        Deprecated because of performance issues
+//
+//        player = AudioTrack(AudioManager.STREAM_MUSIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE_PLAYER, AudioTrack.MODE_STREAM)
+//        val buffer_player = ByteArray(BUFFER_SIZE_PLAYER)
+//        player.write(buffer,0,len)
+//        player.play()
+//
+//        var len = 0
+//        while (fis.available() > 0) {
+//            len = fis.read(buffer)
+//            audioTrack.write(buffer, 0, len)
+//        }
+//        audioTrack.stop()
+//        audioTrack.release()
+//        fis.close()
+
+
+
+        startPlayback()
         recorder.startRecording()
         RUNNING = true
+        /*
+        Ｕ　　　Ｕ　　ＰＰＰＰ　　　ＤＤＤＤ　　　　　Ａ　　　　ＴＴＴＴＴ　　ＥＥＥＥＥ
+        Ｕ　　　Ｕ　　Ｐ　　　Ｐ　　Ｄ　　　Ｄ　　　　Ａ　　　　　　Ｔ　　　　Ｅ
+        Ｕ　　　Ｕ　　Ｐ　　　Ｐ　　Ｄ　　　Ｄ　　　Ａ　Ａ　　　　　Ｔ　　　　Ｅ
+        Ｕ　　　Ｕ　　Ｐ　　　Ｐ　　Ｄ　　　Ｄ　　　Ａ　Ａ　　　　　Ｔ　　　　Ｅ
+        Ｕ　　　Ｕ　　ＰＰＰＰ　　　Ｄ　　　Ｄ　　　Ａ　Ａ　　　　　Ｔ　　　　ＥＥＥＥＥ
+        Ｕ　　　Ｕ　　Ｐ　　　　　　Ｄ　　　Ｄ　　　ＡＡＡ　　　　　Ｔ　　　　Ｅ
+        Ｕ　　　Ｕ　　Ｐ　　　　　　Ｄ　　　Ｄ　　Ａ　　　Ａ　　　　Ｔ　　　　Ｅ
+        Ｕ　　　Ｕ　　Ｐ　　　　　　Ｄ　　　Ｄ　　Ａ　　　Ａ　　　　Ｔ　　　　Ｅ
+        　ＵＵＵ　　　Ｐ　　　　　　ＤＤＤＤ　　　Ａ　　　Ａ　　　　Ｔ　　　　ＥＥＥＥＥ
+         */
+
         handler.post(object : Runnable {
             override fun run() {
                 val read = recorder.read(buffer, 0, BUFFER_SIZE)
@@ -188,6 +231,8 @@ open class SignalRec {
     fun stop(): Boolean {
         Log.d("SignalRec", "Stop")
         RUNNING = false
+        stopPlayback()
         return true
+
     }
 }

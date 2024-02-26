@@ -14,7 +14,6 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.rememberBottomSheetScaffoldState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
@@ -29,20 +28,30 @@ import com.example.a1p.ui.theme.A1pTheme
 
 class GlobalData {
     companion object {
-        lateinit var activity : ComponentActivity
+        lateinit var activity: ComponentActivity
         val signalRec = SignalRec()
         val buttonColor = mutableStateOf(Color.Green)
         val buttonText = mutableStateOf("Start Recording")
         var ifRecording = false
         val timeCounter = TimeCounter()
         val time = mutableStateOf("00:00:00")
+        var signalFName = "seq.json"
+//        val seqGenerator = SeqGenerate(17800)
     }
 }
 
 class MainActivity : ComponentActivity() {
+    companion object {
+        init {
+            System.loadLibrary("a1p")
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         GlobalData.activity = this
+        val it = TestLayer()
+        it.setAssetManager(this.assets)
         setContent {
             A1pTheme {
                 // A surface container using the 'background' color from the theme
@@ -101,7 +110,7 @@ fun onClick() {
         GlobalData.buttonText.value = "Start Recording"
         GlobalData.ifRecording = false
     } else {
-        if(!GlobalData.signalRec.start()){
+        if (!GlobalData.signalRec.start()) {
             return
         }
         GlobalData.timeCounter.start()
