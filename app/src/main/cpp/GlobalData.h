@@ -7,6 +7,7 @@
 #include <string>
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
+#include "wav.h"
 constexpr auto SIGNAL_NAME = "seq.json";
 constexpr auto CARRIER_RATE = 17800;
 

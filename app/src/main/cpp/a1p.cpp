@@ -33,13 +33,15 @@ Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz);
 
 JNIEXPORT void JNICALL
 Java_com_example_a1p_SignalRec_stopRecord(JNIEnv *env, jobject thiz);
+
 }
 
 oboe::AudioStream *stream;
 oboe::AudioStream *stream_in;
 SeqGenerate seqGenerate = SeqGenerate(CARRIER_RATE);
-std::vector<char> audioDataArray;
-JNIEnv *globalEnv;
+WavHeader *wavHeader;
+FILE *wavFile;
+
 
 class AudioCallback : public oboe::AudioStreamCallback {
 public:
@@ -58,19 +60,14 @@ public:
 };
 
 class RecordCallback : public oboe::AudioStreamCallback {
-private:
-//    // Swap endian (little to big) or (big to little) for int16_t
-//    int16_t swap_int16(int16_t value) {
-//        return (value << 8) | (value >> 8);
-//    }
 public:
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
-        auto *inputData = reinterpret_cast<char *>(audioData);
-        audioDataArray.insert(audioDataArray.end(), inputData, inputData + numFrames * sizeof(int16_t));
-//        for (short &i :audioDataArray){
-//            i = swap_int16(i);
-//        }
+        int32_t bytesPerFrame = audioStream->getChannelCount() * audioStream->getBytesPerSample();
+        int32_t totalBytes = numFrames * bytesPerFrame;
+        if(wavFile != nullptr) {
+            fwrite(audioData, 1, totalBytes, wavFile);
+        }
         return oboe::DataCallbackResult::Continue;
     }
 };
@@ -104,9 +101,31 @@ Java_com_example_a1p_SignalRec_stopPlayback(JNIEnv *env, jobject thiz) {
         stream = nullptr;
     }
 }
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz) {
+    wavHeader = new WavHeader;
+    initWavHeader(wavHeader);
+    jclass cls = env->GetObjectClass(thiz);
+    jmethodID mid = env->GetMethodID(cls, "getCacheDir", "()Ljava/io/File;");
+    jobject file = env->CallObjectMethod(thiz, mid);
+    jclass file_cls = env->GetObjectClass(file);
+    jmethodID file_mid = env->GetMethodID(file_cls, "getAbsolutePath", "()Ljava/lang/String;");
+    jstring path = (jstring) env->CallObjectMethod(file, file_mid);
+    const char *cache_dir = env->GetStringUTFChars(path, JNI_FALSE);
+    char *file_name = "output.wav";
+    char *file_path = (char *) malloc(strlen(cache_dir) + strlen(file_name) + 2);
+    strcpy(file_path, cache_dir);
+    strcat(file_path, "/");
+    strcat(file_path, file_name);
+    env->ReleaseStringUTFChars(path, cache_dir);
+    openWavFile(file_path, wavFile, wavHeader);
+    if(wavFile == nullptr){
+        __android_log_print(ANDROID_LOG_INFO, "FILE", "%d", errno);
+    }
+
+
     oboe::AudioStreamBuilder builder = oboe::AudioStreamBuilder();
     builder.setDirection(oboe::Direction::Input)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
@@ -118,10 +137,8 @@ Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz) {
 
     oboe::Result result = builder.openStream(&stream_in);
     if (result == oboe::Result::OK && stream_in) {
-        audioDataArray.clear();
         stream_in->requestStart();
     }
-    globalEnv = env;
 }
 extern "C"
 JNIEXPORT void JNICALL
@@ -130,15 +147,8 @@ Java_com_example_a1p_SignalRec_stopRecord(JNIEnv *env, jobject thiz) {
         stream_in->close();
         stream_in = nullptr;
     }
-    jbyteArray audioDataJavaArray = env->NewByteArray(audioDataArray.size());
-    jboolean isCopy;
-    jbyte *audioData = env->GetByteArrayElements(audioDataJavaArray, &isCopy);
-    memcpy(audioData, audioDataArray.data(), audioDataArray.size());
-    env->ReleaseByteArrayElements(audioDataJavaArray, audioData, 0);
-    jclass cls = env->GetObjectClass(thiz);
-    jmethodID mid = env->GetMethodID(cls, "processAudioData", "([B)V"); // 注意修改方法签名，使用 [B 而不是 [I
-    env->CallVoidMethod(thiz, mid, audioDataJavaArray);
-    env->DeleteLocalRef(audioDataJavaArray);
+    closeWavFile(wavFile, wavHeader);
+    delete wavHeader;
 }
 
 
