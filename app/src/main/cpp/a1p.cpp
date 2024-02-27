@@ -41,7 +41,7 @@ public:
         }
         int16_t *outputBuffer = static_cast<int16_t *>(audioData);
         for (int i = 0; i < numFrames; ++i) {
-//            outputBuffer[i] = static_cast<int16_t>(65535 * (sin(2 * M_PI * 0.1 * i) + 1)); //Test sin signal
+//            outputBuffer[i] = static_cast<int16_t>(65535 * (sin(2 * M_PI * 0.05 * i) + 1)); //Test sin signal
             outputBuffer[i] = seqGenerate.getNewInt16();
         }
         return oboe::DataCallbackResult::Continue;
@@ -58,7 +58,7 @@ Java_com_example_a1p_SignalRec_startPlayback(JNIEnv *env, jobject thiz) {
             ->setDirection(oboe::Direction::Output)
             ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
             ->setFormat(oboe::AudioFormat::I16)
-//            ->setSampleRate(48000)
+            ->setSampleRate(48000)
             ->setChannelCount(oboe::ChannelCount::Mono)
             ->setCallback(&audioCb);
 

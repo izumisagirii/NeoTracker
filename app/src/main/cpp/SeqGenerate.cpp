@@ -7,7 +7,9 @@
 #include <android/asset_manager.h>
 #include <android/asset_manager_jni.h>
 
-AAssetManager *mgr = NULL;  // 获取 AAssetManager
+
+AAssetManager *mgr = nullptr;
+
 extern "C"
 JNIEXPORT void JNICALL
 Java_com_example_a1p_TestLayer_00024Companion_SetAssetManager(JNIEnv *env, jobject thiz,
@@ -50,9 +52,9 @@ double SeqGenerate::getNew() {
 
 int16_t SeqGenerate::getNewInt16() {
     double value = getNew();
-    double mappedValue = (value - (-1)) / (1 - (-1));
-    double scaledValue = mappedValue * 65535;
-    return round(scaledValue);
+//    double mappedValue = (value - (-1)) / (1 - (-1));
+    double scaledValue = value * 32768.0;
+    return static_cast<int16_t>(std::round(scaledValue));
 }
 
 std::vector<Complex> SeqGenerate::jsonToComplexArray(std::string json) {
@@ -66,6 +68,7 @@ std::vector<Complex> SeqGenerate::jsonToComplexArray(std::string json) {
     for (const auto &elem: json_val) {
         double real = elem["real"].asDouble();
         double imag = elem["imag"].asDouble();
+//        __android_log_print(ANDROID_LOG_INFO, "JSON", "%s", Complex(real,imag).toString().c_str());
         _array.push_back(Complex(real, imag));
     }
     return _array;
@@ -79,6 +82,7 @@ std::string SeqGenerate::readJsonFromAssets(std::string fileName) {
         memset(buffer, 0x00, dataFileSize);
         AAsset_read(asset, buffer, dataFileSize);
         AAsset_close(asset);
+//        __android_log_print(ANDROID_LOG_INFO, "JSON", "%s", buffer);
         std::string jsonContent(buffer, dataFileSize);
         free(buffer);
         return jsonContent;
@@ -99,6 +103,7 @@ void SeqGenerate::generateCarrierArray(int fc) {
 void SeqGenerate::init() {
     std::string json = readJsonFromAssets(SIGNAL_NAME);
     array = jsonToComplexArray(json);
+//    __android_log_print(ANDROID_LOG_INFO, "ARRAY", "%s", (array[0].toString() + array[1].toString() + array[2].toString()).c_str());
     boundArray = array.size();
     generateCarrierArray(carryRate);
     pArray = 0;

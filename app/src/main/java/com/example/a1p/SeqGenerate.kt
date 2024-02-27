@@ -21,7 +21,8 @@ class TestLayer {
         private external fun SetAssetManager(assetManager: AssetManager)
     }
 }
-// Deprecated, use cpp interface instead
+
+@Deprecated("Implemented using cpp")
 data class Complex(val real: Double, val imag: Double) {
     fun times(other: Complex): Complex {
         val realPart = this.real * other.real - this.imag * other.imag
@@ -30,6 +31,7 @@ data class Complex(val real: Double, val imag: Double) {
     }
 }
 
+@Deprecated("Implemented using cpp")
 class SeqGenerate(private val fc: Int) {
     private var carryRate by Delegates.notNull<Int>()
     private var array: Array<Complex>

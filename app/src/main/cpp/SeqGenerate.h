@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 #include "json/json.h"
+#include <android/log.h>
 
 class Complex {
 public:
@@ -38,6 +39,10 @@ public:
         return *this;
     }
 
+    std::string toString() {
+        return "{" + std::to_string(real) + "," + std::to_string(imag) + "}";
+    }
+
     double real;
     double imag;
 };
@@ -46,11 +51,13 @@ public:
 class SeqGenerate {
 public:
     SeqGenerate(int fc);
+
     void init();
 
     double getNew();
 
     int16_t getNewInt16();
+
     bool isInit;
 private:
     int carryRate;
