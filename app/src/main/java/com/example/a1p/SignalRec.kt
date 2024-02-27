@@ -24,15 +24,20 @@ open class SignalRec {
     private val AUDIO_FORMAT = AudioFormat.ENCODING_PCM_16BIT
     private val BUFFER_SIZE =
         AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
-    private val BUFFER_SIZE_PLAYER = AudioTrack.getMinBufferSize(SAMPLE_RATE,CHANNEL_CONFIG,AUDIO_FORMAT)
-//    private val FRAME_LENGTH = 512
+    private val BUFFER_SIZE_PLAYER =
+        AudioTrack.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT)
+
+    //    private val FRAME_LENGTH = 512
 //    private val WAV_HEADER_SIZE = 44
     private val UPDATE_INTERVAL = 5L
-    private var RUNNING = true
-    private lateinit var recorder: AudioRecord
+//    private var RUNNING = true
+
+    //    private lateinit var recorder: AudioRecord
 //    private lateinit var player: AudioTrack
     private val handler: Handler = Handler(Looper.getMainLooper())
-//    private val handler_play: Handler = Handler(Looper.getMainLooper())
+
+    //    private val handler_play: Handler = Handler(Looper.getMainLooper())
+//    private lateinit var audioData: ByteArray
 
     private class WavHeader(
         val sampleRate: Int,
@@ -87,6 +92,33 @@ open class SignalRec {
 
     private external fun startPlayback()
     private external fun stopPlayback()
+    private external fun startRecord()
+    private external fun stopRecord()
+    open fun processAudioData(audioData: ByteArray) {
+        val tempFile = File.createTempFile("temp", ".wav")
+
+        try {
+            val fileOutputStream = FileOutputStream(tempFile)
+            val wavHeader = WavHeader(SAMPLE_RATE, 16, 1, audioData.size)
+            wavHeader.write(fileOutputStream)
+            fileOutputStream.write(audioData)
+            fileOutputStream.close()
+        } catch (e: Exception) {
+            Log.e("Tracker", "Error writing wav data to temp file", e)
+        }
+
+        val fileUri = FileProvider.getUriForFile(
+            GlobalData.activity,
+            "com.example.a1p.fileprovider",
+            tempFile
+        )
+        val shareIntent = Intent(Intent.ACTION_SEND)
+        shareIntent.type = "audio/wav"
+        shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
+        val chooserIntent = Intent.createChooser(shareIntent, "Share wav file")
+        startActivity(GlobalData.activity, chooserIntent, null)
+    }
+
     fun start(): Boolean {
         Log.d("SignalRec", "Start")
 
@@ -117,12 +149,12 @@ open class SignalRec {
             return false
         }
 
-        recorder = AudioRecord(
-            MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE
-        )
-//        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG,AUDIO_FORMAT)
-        val buffer = ByteArray(BUFFER_SIZE)
-        val outputStream = ByteArrayOutputStream()
+//        recorder = AudioRecord(
+//            MediaRecorder.AudioSource.MIC, SAMPLE_RATE, CHANNEL_CONFIG, AUDIO_FORMAT, BUFFER_SIZE
+//        )
+////        val bufferSize = AudioRecord.getMinBufferSize(SAMPLE_RATE, CHANNEL_CONFIG,AUDIO_FORMAT)
+//        val buffer = ByteArray(BUFFER_SIZE)
+//        val outputStream = ByteArrayOutputStream()
 
 //        /*
 //        ＰＰＰＰ　　　Ｌ　　　　　　　　Ａ　　　　Ｙ　　　Ｙ　　ＥＥＥＥＥ　　ＲＲＲＲ
@@ -153,10 +185,11 @@ open class SignalRec {
 //        fis.close()
 
 
-
         startPlayback()
-        recorder.startRecording()
-        RUNNING = true
+        startRecord()
+//        recorder.startRecording()
+
+//        RUNNING = true
         /*
         Ｕ　　　Ｕ　　ＰＰＰＰ　　　ＤＤＤＤ　　　　　Ａ　　　　ＴＴＴＴＴ　　ＥＥＥＥＥ
         Ｕ　　　Ｕ　　Ｐ　　　Ｐ　　Ｄ　　　Ｄ　　　　Ａ　　　　　　Ｔ　　　　Ｅ
@@ -169,70 +202,46 @@ open class SignalRec {
         　ＵＵＵ　　　Ｐ　　　　　　ＤＤＤＤ　　　Ａ　　　Ａ　　　　Ｔ　　　　ＥＥＥＥＥ
          */
 
-        handler.post(object : Runnable {
-            override fun run() {
-                val read = recorder.read(buffer, 0, BUFFER_SIZE)
-//                Log.d("bufferSize","$BUFFER_SIZE")
-                outputStream.write(buffer, 0, read)
-                if (RUNNING) {
-                    handler.postDelayed(this, UPDATE_INTERVAL)
-                    return
-                }
-                recorder.stop()
-                recorder.release()
-
-
-                val audioData = outputStream.toByteArray()
-                outputStream.close()
-
-                val tempFile = File.createTempFile("temp", ".wav")
-
-                try {
-                    val fileOutputStream = FileOutputStream(tempFile)
-                    val wavHeader = WavHeader(SAMPLE_RATE, 16, 1, audioData.size)
-                    wavHeader.write(fileOutputStream)
-                    fileOutputStream.write(audioData)
-                    fileOutputStream.close()
-                } catch (e: Exception) {
-                    Log.e("Tracker", "Error writing wav data to temp file", e)
-                }
-
-                val fileUri = FileProvider.getUriForFile(
-                    GlobalData.activity,
-                    "com.example.a1p.fileprovider",
-                    tempFile
-                )
-                val shareIntent = Intent(Intent.ACTION_SEND)
-                shareIntent.type = "audio/wav"
-                shareIntent.putExtra(Intent.EXTRA_STREAM, fileUri)
-                val chooserIntent = Intent.createChooser(shareIntent, "Share wav file")
-                startActivity(GlobalData.activity, chooserIntent, null)
-
-
-//                val wavFile = File("audio.wav")
-//                val fileOutputStream = FileOutputStream(wavFile)
-//                val wavHeader = WavHeader(SAMPLE_RATE, 16, 1, audioData.size)
-//                wavHeader.write(fileOutputStream)
-//                fileOutputStream.write(audioData)
-//                fileOutputStream.close()
-
-//                val intent = Intent(Intent.ACTION_SEND)
-//                intent.type = "audio/wav"
-//                val uri = FileProvider.getUriForFile(this, "com.example.fileprovider", file)
+//        handler.post(object : Runnable {
+//            override fun run() {
+////                val read = recorder.read(buffer, 0, BUFFER_SIZE)
+////                Log.d("bufferSize","$BUFFER_SIZE")
+////                outputStream.write(buffer, 0, read)
+//                if (RUNNING) {
+//                    handler.postDelayed(this, UPDATE_INTERVAL)
+//                    return
+//                }
+////                recorder.stop()
+////                recorder.release()
 //
-//                intent.putExtra(Intent.EXTRA_STREAM, uri)
-//                startActivity(Intent.createChooser(intent, "audio.wav"))
-
-            }
-        })
+//
+////                val audioData = outputStream.toByteArray()
+////                outputStream.close()
+//
+////                val wavFile = File("audio.wav")
+////                val fileOutputStream = FileOutputStream(wavFile)
+////                val wavHeader = WavHeader(SAMPLE_RATE, 16, 1, audioData.size)
+////                wavHeader.write(fileOutputStream)
+////                fileOutputStream.write(audioData)
+////                fileOutputStream.close()
+//
+////                val intent = Intent(Intent.ACTION_SEND)
+////                intent.type = "audio/wav"
+////                val uri = FileProvider.getUriForFile(this, "com.example.fileprovider", file)
+////
+////                intent.putExtra(Intent.EXTRA_STREAM, uri)
+////                startActivity(Intent.createChooser(intent, "audio.wav"))
+//
+//            }
+//        })
         return true
     }
 
     fun stop(): Boolean {
         Log.d("SignalRec", "Stop")
-        RUNNING = false
+//        RUNNING = false
+        stopRecord()
         stopPlayback()
         return true
-
     }
 }
