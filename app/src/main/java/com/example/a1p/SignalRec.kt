@@ -154,7 +154,8 @@ open class SignalRec {
 
 
 
-        startPlayback()
+        if (GlobalData.ifSeqGen)
+            startPlayback()
         recorder.startRecording()
         RUNNING = true
         /*
@@ -231,7 +232,8 @@ open class SignalRec {
     fun stop(): Boolean {
         Log.d("SignalRec", "Stop")
         RUNNING = false
-        stopPlayback()
+        if (GlobalData.ifSeqGen)
+            stopPlayback()
         return true
 
     }

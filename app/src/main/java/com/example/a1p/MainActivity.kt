@@ -32,6 +32,9 @@ class GlobalData {
         val signalRec = SignalRec()
         val buttonColor = mutableStateOf(Color.Green)
         val buttonText = mutableStateOf("Start Recording")
+        val buttonColor_t = mutableStateOf(Color.Green)
+        val buttonText_t = mutableStateOf("Only Recording")
+        var ifSeqGen = false
         var ifRecording = false
         val timeCounter = TimeCounter()
         val time = mutableStateOf("00:00:00")
@@ -99,6 +102,20 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
                 fontStyle = FontStyle.Normal
             )
         }
+        Button(
+            onClick = { onClick_t() },
+            colors = ButtonDefaults.buttonColors(
+//                contentColor = Color.Green,
+                containerColor = GlobalData.buttonColor_t.value
+            )
+        ) {
+            Text(
+                text = GlobalData.buttonText_t.value,
+                fontSize = 20.sp,
+                color = Color.Black,
+                fontStyle = FontStyle.Normal
+            )
+        }
     }
 }
 
@@ -117,6 +134,20 @@ fun onClick() {
         GlobalData.buttonColor.value = Color.Red
         GlobalData.buttonText.value = "!Stop Recording"
         GlobalData.ifRecording = true
+    }
+}
+fun onClick_t() {
+    if (GlobalData.ifRecording){
+        return
+    }
+    if (GlobalData.ifSeqGen) {
+        GlobalData.buttonColor_t.value = Color.Green
+        GlobalData.buttonText_t.value = "Only Recording"
+        GlobalData.ifSeqGen = false
+    } else {
+        GlobalData.buttonColor_t.value = Color.Red
+        GlobalData.buttonText_t.value = "With SeqGen"
+        GlobalData.ifSeqGen = true
     }
 }
 
