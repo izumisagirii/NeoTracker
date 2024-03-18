@@ -3,17 +3,10 @@ package com.example.a1p
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.media.AudioFormat
-import android.media.AudioRecord
-import android.media.AudioTrack
-import android.media.MediaRecorder
-import android.os.Handler
-import android.os.Looper
 import android.util.Log
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat.startActivity
 import androidx.core.content.FileProvider
-import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 
