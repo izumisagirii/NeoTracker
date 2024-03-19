@@ -29,7 +29,7 @@ JNIEXPORT void JNICALL
 Java_com_example_a1p_SignalRec_stopPlayback(JNIEnv *env, jobject thiz);
 
 JNIEXPORT void JNICALL
-Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz);
+Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz, jint micId);
 
 JNIEXPORT void JNICALL
 Java_com_example_a1p_SignalRec_stopRecord(JNIEnv *env, jobject thiz);
@@ -104,7 +104,7 @@ Java_com_example_a1p_SignalRec_stopPlayback(JNIEnv *env, jobject thiz) {
 
 extern "C"
 JNIEXPORT void JNICALL
-Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz) {
+Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz, jint micId) {
     wavHeader = new WavHeader;
     initWavHeader(wavHeader);
     jclass cls = env->GetObjectClass(thiz);
@@ -132,6 +132,7 @@ Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz) {
             ->setSharingMode(oboe::SharingMode::Exclusive)
             ->setFormat(oboe::AudioFormat::I16)
             ->setChannelCount(oboe::ChannelCount::Mono)
+            ->setDeviceId(micId)
             ->setSampleRate(48000)
             ->setCallback(&recordCb);
 
