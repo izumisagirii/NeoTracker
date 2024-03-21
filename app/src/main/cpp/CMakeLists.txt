@@ -35,9 +35,12 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         a1p.cpp
         SeqGenerate.cpp
         json/jsoncpp.cpp
+        signalProc/SignalProc.cpp
         )
 
-
+include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/json)
+include_directories(${CMAKE_SOURCE_DIR}/signalProc)
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.

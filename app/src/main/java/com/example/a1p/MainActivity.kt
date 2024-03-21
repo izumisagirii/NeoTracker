@@ -20,6 +20,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -59,7 +60,7 @@ class GlobalData {
         val modelProducer = CartesianChartModelProducer.build()
 
         //        val data = mutableStateOf(List(384) { (0..10).random() })
-        val data = mutableStateOf(List(384) { 0 })
+        val data = mutableStateOf(List(384) { 0.0 })
 
 //        val seqGenerator = SeqGenerate(17800)
     }
@@ -149,6 +150,20 @@ fun PlotView() {
                 lineSeries {
                     series(GlobalData.data.value)
                 }
+            }
+        }
+        DisposableEffect(Unit) {
+            setCppCallback { newData ->
+                GlobalData.data.value = newData.toList()
+//                GlobalData.data.value = GlobalData.data.value.map { it + (-1..1).random() }
+                GlobalData.modelProducer.tryRunTransaction {
+                    lineSeries {
+                        series(GlobalData.data.value)
+                    }
+                }
+            }
+            onDispose {
+                clearCppCallback()
             }
         }
         CartesianChartHost(

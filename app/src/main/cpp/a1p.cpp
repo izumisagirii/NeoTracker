@@ -20,6 +20,7 @@
 #include <math.h>
 #include "SeqGenerate.h"
 #include "GlobalData.h"
+#include "SignalProc.h"
 
 extern "C" {
 JNIEXPORT void JNICALL
@@ -39,6 +40,7 @@ Java_com_example_a1p_SignalRec_stopRecord(JNIEnv *env, jobject thiz);
 oboe::AudioStream *stream;
 oboe::AudioStream *stream_in;
 SeqGenerate seqGenerate = SeqGenerate(CARRIER_RATE);
+SignalProc signalProc = SignalProc();
 WavHeader *wavHeader;
 FILE *wavFile;
 
@@ -67,6 +69,14 @@ public:
         int32_t totalBytes = numFrames * bytesPerFrame;
         if(wavFile != nullptr) {
             fwrite(audioData, 1, totalBytes, wavFile);
+        }
+
+        int16_t* samples = static_cast<int16_t*>(audioData);
+        for (int i = 0; i < numFrames; ++i) {
+//            printf("Sample %d: %d\n", i, samples[i]);
+            auto _point = seqGenerate.deModNew(samples[i]);
+            auto _point_filtered = seqGenerate.filteredNew(_point);
+            signalProc.processStream(_point.magnitude(),_point_filtered.magnitude());
         }
         return oboe::DataCallbackResult::Continue;
     }

@@ -35,17 +35,19 @@ Java_com_example_a1p_TestLayer_00024Companion_SetAssetManager(JNIEnv *env, jobje
 SeqGenerate::SeqGenerate(int fc) {
     carryRate = fc;
     isInit = false;
+    this->window = std::deque<Complex>(ZC_LENGTH * FILTER_PARAM.size());
+    this->window_cor = std::deque<Complex>(ZC_LENGTH);
 }
 
 double SeqGenerate::getNew() {
-    double amp = (array[pArray] * multiplyArray[pCarry]).real;
+    double amp = (*pArray * *pCarry).real;
     pArray++;
     pCarry++;
-    if (pArray == boundArray) {
-        pArray = 0;
+    if (pArray == array.end()) {
+        pArray = array.begin();
     }
-    if (pCarry == 48000) {
-        pCarry = 0;
+    if (pCarry == multiplyArray.end()) {
+        pCarry = multiplyArray.begin();
     }
     return amp;
 }
@@ -57,19 +59,21 @@ int16_t SeqGenerate::getNewInt16() {
     return static_cast<int16_t>(std::round(scaledValue));
 }
 
-std::vector<Complex> SeqGenerate::jsonToComplexArray(std::string json) {
-    std::vector<Complex> _array;
+
+std::array<Complex, ZC_LENGTH> SeqGenerate::jsonToComplexArray(const std::string &json) {
+    std::array<Complex, ZC_LENGTH> _array;
     Json::Value json_val;
     Json::Reader json_reader;
     bool success = json_reader.parse(json, json_val);
     if (!success) {
         raise(SIGFPE);
     }
+    assert(json_val.size() == ZC_LENGTH);
+    int index = 0;
     for (const auto &elem: json_val) {
         double real = elem["real"].asDouble();
         double imag = elem["imag"].asDouble();
-//        __android_log_print(ANDROID_LOG_INFO, "JSON", "%s", Complex(real,imag).toString().c_str());
-        _array.push_back(Complex(real, imag));
+        _array[index++] = Complex(real, imag);
     }
     return _array;
 }
@@ -91,7 +95,6 @@ std::string SeqGenerate::readJsonFromAssets(std::string fileName) {
 }
 
 void SeqGenerate::generateCarrierArray(int fc) {
-    multiplyArray = std::vector<Complex>(48000);
     for (int i = 0; i < 48000; i++) {
         double radians = 2 * i * M_PI * (double(fc) / 48000.0);
         double cosValue = cos(radians);
@@ -104,10 +107,44 @@ void SeqGenerate::init() {
     std::string json = readJsonFromAssets(SIGNAL_NAME);
     array = jsonToComplexArray(json);
 //    __android_log_print(ANDROID_LOG_INFO, "ARRAY", "%s", (array[0].toString() + array[1].toString() + array[2].toString()).c_str());
-    boundArray = array.size();
     generateCarrierArray(carryRate);
-    pArray = 0;
-    pCarry = 0;
+    pArray = this->array.begin();
+    pCarry = this->multiplyArray.begin();
+    pDeMod = this->multiplyArray.end();
     isInit = true;
 }
+
+Complex SeqGenerate::deModNew(double input) {
+
+    if (pDeMod == multiplyArray.begin()) {
+        pDeMod = multiplyArray.end();
+    }
+    pDeMod--;
+    auto res = *pDeMod * input;
+    return this->correlation(res);
+}
+
+Complex SeqGenerate::filteredNew(Complex &input) {
+    window.push_front(input);
+    window.pop_back();
+    Complex _output;
+    for (int it = 0; it < FILTER_PARAM.size(); it++) {
+        _output = _output + window[it * ZC_LENGTH] * FILTER_PARAM[it];
+    }
+    return _output;
+}
+
+Complex SeqGenerate::correlation(Complex &input) {
+    window_cor.push_back(input);
+    window_cor.pop_front();
+    Complex _output;
+    for (int it = 0; it < ZC_LENGTH; it++) {
+        _output = _output + (array[it] * window_cor[it]);
+    }
+    return _output;
+}
+
+
+
+
 
