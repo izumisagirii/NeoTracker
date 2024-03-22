@@ -122,6 +122,8 @@ Complex SeqGenerate::deModNew(double input) {
     pDeMod--;
     auto res = *pDeMod * input;
     return this->correlation(res);
+//    return res;
+//    return {input,input};
 }
 
 Complex SeqGenerate::filteredNew(Complex &input) {

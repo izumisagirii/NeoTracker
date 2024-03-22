@@ -26,7 +26,7 @@ project("a1p")
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
 
-
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
 
 find_package (oboe REQUIRED CONFIG)

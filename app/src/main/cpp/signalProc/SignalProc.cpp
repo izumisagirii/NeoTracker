@@ -18,7 +18,7 @@ void SignalProc::processStream(const double value, const double move_value) {
 //            }
             __android_log_print(ANDROID_LOG_INFO, "CALL", "-------");
             std::vector<double> output(ZC_LENGTH);
-            std::copy_n(buffer.begin(), std::min(static_cast<int>(length), ZC_LENGTH), output.begin());
+            std::copy_n(buffer_filtered.begin(), std::min(static_cast<int>(length), ZC_LENGTH), output.begin());
             buffer_filtered.erase(buffer_filtered.begin(), buffer_filtered.begin() + length);
             buffer.erase(buffer.begin(), buffer.begin() + length);
 
