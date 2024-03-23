@@ -65,19 +65,32 @@ class RecordCallback : public oboe::AudioStreamCallback {
 public:
     oboe::DataCallbackResult
     onAudioReady(oboe::AudioStream *audioStream, void *audioData, int32_t numFrames) {
+
+
         int32_t bytesPerFrame = audioStream->getChannelCount() * audioStream->getBytesPerSample();
         int32_t totalBytes = numFrames * bytesPerFrame;
-        if(wavFile != nullptr) {
-            fwrite(audioData, 1, totalBytes, wavFile);
-        }
+//        fwrite(audioData, 1, totalBytes, wavFile);
 
-        int16_t* samples = static_cast<int16_t*>(audioData);
-        for (int i = 0; i < numFrames; ++i) {
+        auto *tempBuffer = new int16_t[numFrames];
+        memcpy(tempBuffer, audioData, totalBytes);
+
+        auto future = std::async(std::launch::async, [&] {
+            if (wavFile != nullptr) {
+                fwrite(tempBuffer, 1, totalBytes, wavFile);
+            }
+
+            int16_t *samples = static_cast<int16_t *>(tempBuffer);
+            for (int i = 0; i < numFrames; ++i) {
 //            printf("Sample %d: %d\n", i, samples[i]);
-            auto _point = seqGenerate.deModNew(samples[i]);
-            auto _point_filtered = seqGenerate.filteredNew(_point);
-            signalProc.processStream(_point.magnitude(),_point_filtered.magnitude());
-        }
+                auto _point = seqGenerate.deModNew(samples[i]);
+                auto _point_filtered = seqGenerate.filteredNew(_point);
+                signalProc.processStream(_point.magnitude(), _point_filtered.magnitude());
+            }
+
+            delete[] tempBuffer;
+        });
+
+
         return oboe::DataCallbackResult::Continue;
     }
 };
@@ -92,7 +105,7 @@ Java_com_example_a1p_SignalRec_startPlayback(JNIEnv *env, jobject thiz) {
     oboe::AudioStreamBuilder builder;
     builder.setSharingMode(oboe::SharingMode::Exclusive)
             ->setDirection(oboe::Direction::Output)
-            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+            ->setPerformanceMode(oboe::PerformanceMode::PowerSaving)
             ->setFormat(oboe::AudioFormat::I16)
             ->setSampleRate(48000)
             ->setChannelCount(oboe::ChannelCount::Mono)
@@ -131,14 +144,14 @@ Java_com_example_a1p_SignalRec_startRecord(JNIEnv *env, jobject thiz, jint micId
     strcat(file_path, file_name);
     env->ReleaseStringUTFChars(path, cache_dir);
     openWavFile(file_path, wavFile, wavHeader);
-    if(wavFile == nullptr){
+    if (wavFile == nullptr) {
         __android_log_print(ANDROID_LOG_INFO, "FILE", "%d", errno);
     }
 
 
     oboe::AudioStreamBuilder builder = oboe::AudioStreamBuilder();
     builder.setDirection(oboe::Direction::Input)
-            ->setPerformanceMode(oboe::PerformanceMode::LowLatency)
+            ->setPerformanceMode(oboe::PerformanceMode::PowerSaving)
             ->setSharingMode(oboe::SharingMode::Exclusive)
             ->setFormat(oboe::AudioFormat::I16)
             ->setChannelCount(oboe::ChannelCount::Mono)

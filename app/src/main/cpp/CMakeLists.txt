@@ -26,17 +26,15 @@ project("a1p")
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3")
 
-
-find_package (oboe REQUIRED CONFIG)
+find_package(oboe REQUIRED CONFIG)
 add_library(${CMAKE_PROJECT_NAME} SHARED
-    # List C/C++ source files with relative paths to this CMakeLists.txt.
+        # List C/C++ source files with relative paths to this CMakeLists.txt.
         a1p.cpp
         SeqGenerate.cpp
         json/jsoncpp.cpp
         signalProc/SignalProc.cpp
-        )
+)
 
 include_directories(${CMAKE_SOURCE_DIR})
 include_directories(${CMAKE_SOURCE_DIR}/json)
@@ -45,7 +43,11 @@ include_directories(${CMAKE_SOURCE_DIR}/signalProc)
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
 target_link_libraries(${CMAKE_PROJECT_NAME}
-    # List libraries link to the target library
+        # List libraries link to the target library
         oboe::oboe
         android
         log)
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE
+        "$<$<CONFIG:RELEASE>:-O3>"
+        "$<$<CONFIG:DEBUG>:-O3>"
+)
