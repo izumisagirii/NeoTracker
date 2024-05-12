@@ -3,6 +3,12 @@
 
 
 #include <android/log.h>
+#include <iostream>
+#include <thread>
+#include <mutex>
+#include <condition_variable>
+#include <queue>
+#include <functional>
 
 #define WAV_HEADER_SIZE 44
 #define PCM_FORMAT 1
@@ -64,5 +70,46 @@ inline void closeWavFile( FILE* &wavFile, WavHeader* wavHeader) {
     fclose(wavFile);
     wavFile = nullptr;
 }
+
+class SingleThreadExecutor {
+public:
+    SingleThreadExecutor() : done(false), worker(&SingleThreadExecutor::work, this) {}
+
+    ~SingleThreadExecutor() {
+        {
+            std::unique_lock<std::mutex> lock(m);
+            done = true;
+        }
+        cv.notify_one();
+        worker.join();
+    }
+
+    void submit(std::function<void()> task) {
+        std::unique_lock<std::mutex> lock(m);
+        tasks.push(task);
+        cv.notify_one();
+    }
+
+private:
+    void work() {
+        while (true) {
+            std::function<void()> task;
+            {
+                std::unique_lock<std::mutex> lock(m);
+                cv.wait(lock, [this] { return done || !tasks.empty(); });
+                if (done && tasks.empty()) break;
+                task = tasks.front();
+                tasks.pop();
+            }
+            task();
+        }
+    }
+
+    std::thread worker;
+    std::mutex m;
+    std::condition_variable cv;
+    std::queue<std::function<void()>> tasks;
+    bool done;
+};
 
 #endif

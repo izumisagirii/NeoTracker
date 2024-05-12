@@ -124,7 +124,7 @@ open class SignalRec {
         )
         shareIntent.putExtra(Intent.EXTRA_STREAM, uri)
         val chooserIntent = Intent.createChooser(shareIntent, "Share wav file")
-        startActivity(GlobalData.activity, chooserIntent, null)
+//        startActivity(GlobalData.activity, chooserIntent, null)
 
 
         return true

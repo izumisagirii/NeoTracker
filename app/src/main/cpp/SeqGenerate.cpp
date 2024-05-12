@@ -35,7 +35,7 @@ Java_com_example_a1p_TestLayer_00024Companion_SetAssetManager(JNIEnv *env, jobje
 SeqGenerate::SeqGenerate(int fc) {
     carryRate = fc;
     isInit = false;
-    this->window = std::deque<Complex>(ZC_LENGTH * FILTER_PARAM.size());
+    this->window = std::deque<Complex>(ZC_LENGTH);
     this->window_cor = std::deque<Complex>(ZC_LENGTH);
 }
 
@@ -50,6 +50,7 @@ double SeqGenerate::getNew() {
         pCarry = multiplyArray.begin();
     }
     return amp;
+//    return pArray->real;
 }
 
 int16_t SeqGenerate::getNewInt16() {
@@ -110,36 +111,54 @@ void SeqGenerate::init() {
     generateCarrierArray(carryRate);
     pArray = this->array.begin();
     pCarry = this->multiplyArray.begin();
-    pDeMod = this->multiplyArray.end();
+    pDeMod = this->multiplyArray.begin();
     isInit = true;
 }
 
 Complex SeqGenerate::deModNew(double input) {
-
-    if (pDeMod == multiplyArray.begin()) {
-        pDeMod = multiplyArray.end();
-    }
-    pDeMod--;
+//    input = 1;
     auto res = *pDeMod * input;
-    return this->correlation(res);
+    pDeMod++;
+    if (pDeMod == multiplyArray.end()) {
+        pDeMod = multiplyArray.begin();
+    }
+
+    return this->correlation( res );
 //    return res;
-//    return {input,input};
+//    return {res.real,res.real};
+//    return {input,0};
 }
+
+//Complex SeqGenerate::filteredNew(Complex &input) {
+//    window.push_front(input);
+//    window.pop_back();
+//    Complex _output;
+//    for (int it = 0; it < FILTER_PARAM.size(); it++) {
+//        _output = _output + window[it * ZC_LENGTH] * FILTER_PARAM[it];
+//    }
+//    return _output;
+//}
 
 Complex SeqGenerate::filteredNew(Complex &input) {
-    window.push_front(input);
-    window.pop_back();
-    Complex _output;
-    for (int it = 0; it < FILTER_PARAM.size(); it++) {
-        _output = _output + window[it * ZC_LENGTH] * FILTER_PARAM[it];
-    }
-    return _output;
+//    window.push_back(input);
+
+    Complex _w = window.front();
+    Complex _y = input - _w*(1 - 0.7);
+    window.push_back(_y + _w);
+    window.pop_front();
+
+//    Complex _output;
+//    for (int it = 0; it < FILTER_PARAM.size(); it++) {
+//        _output = _output + window[it * ZC_LENGTH] * FILTER_PARAM[it];
+//    }
+
+    return _y;
 }
 
-Complex SeqGenerate::correlation(Complex &input) {
+Complex SeqGenerate::correlation(Complex input) {
     window_cor.push_back(input);
     window_cor.pop_front();
-    Complex _output;
+    Complex _output(0,0);
     for (int it = 0; it < ZC_LENGTH; it++) {
         _output = _output + (array[it] * window_cor[it]);
     }

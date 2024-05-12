@@ -46,6 +46,7 @@ import com.patrykandpatrick.vico.core.model.lineSeries
 import com.patrykandpatrick.vico.core.zoom.Zoom
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
+import java.io.IOException
 
 class GlobalData {
     companion object {
@@ -61,12 +62,14 @@ class GlobalData {
 
         //        val data = mutableStateOf(List(384) { (0..10).random() })
         val data = mutableStateOf(List(384) { 0.0 })
+        lateinit var socketClient: SocketClient
 
 //        val seqGenerator = SeqGenerate(17800)
     }
 }
 
 class MainActivity : ComponentActivity() {
+
     companion object {
         init {
             System.loadLibrary("a1p")
@@ -78,6 +81,12 @@ class MainActivity : ComponentActivity() {
         GlobalData.activity = this
         val it = TestLayer()
         it.setAssetManager(this.assets)
+
+
+        // SocketClient
+        GlobalData.socketClient = SocketClient(this)
+        GlobalData.socketClient.discoverServices()
+
         setContent {
             A1pTheme {
                 // A surface container using the 'background' color from the theme
@@ -90,6 +99,12 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        GlobalData.socketClient.close()
+    }
+
 }
 
 @Composable
@@ -162,8 +177,12 @@ fun PlotView() {
                     }
                 }
             }
+            setCppCallbackOp { newData ->
+                GlobalData.socketClient.sendIntArray(newData)
+            }
             onDispose {
                 clearCppCallback()
+                clearCppCallbackOp()
             }
         }
         CartesianChartHost(

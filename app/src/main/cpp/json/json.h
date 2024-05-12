@@ -132,8 +132,8 @@ license you like.
 #ifndef JSON_ALLOCATOR_H_INCLUDED
 #define JSON_ALLOCATOR_H_INCLUDED
 
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cstring"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/memory"
+#include <cstring>
+#include <memory>
 
 #pragma pack(push, 8)
 
@@ -233,14 +233,15 @@ bool operator!=(const SecureAllocator<T>&, const SecureAllocator<U>&) {
 
 #ifndef JSON_CONFIG_H_INCLUDED
 #define JSON_CONFIG_H_INCLUDED
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cstddef"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/cstdint"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/istream"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/memory"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/ostream"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/sstream"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/string"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/type_traits"
+#include <cstddef>
+#include <cstdint>
+#include <istream>
+#include <memory>
+#include <ostream>
+#include <sstream>
+#include <string>
+#include <type_traits>
+
 
 // If non-zero, the library uses exceptions to report bad input instead of C
 // assertion macros. The default is to use exceptions.
@@ -563,12 +564,13 @@ public:
 #endif
 #endif
 
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/array"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/exception"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/map"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/memory"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/string"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/vector"
+#include <array>
+#include <exception>
+#include <map>
+#include <memory>
+#include <string>
+#include <vector>
+
 
 // Disable warning C4251: <data member>: <type> needs to have dll-interface to
 // be used by...
@@ -1483,11 +1485,11 @@ inline void swap(Value& a, Value& b) { a.swap(b); }
 #include "json_features.h"
 #include "value.h"
 #endif // if !defined(JSON_IS_AMALGAMATION)
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/deque"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/iosfwd"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/istream"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/stack"
-#include "../../../../../../../../Android/Sdk/ndk/25.1.8937393/toolchains/llvm/prebuilt/linux-x86_64/sysroot/usr/include/c++/v1/string"
+#include <deque>
+#include <iosfwd>
+#include <istream>
+#include <stack>
+#include <string>
 
 // Disable warning C4251: <data member>: <type> needs to have dll-interface to
 // be used by...

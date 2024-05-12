@@ -93,7 +93,7 @@ private:
     std::string readJsonFromAssets(std::string fileName);
 
     std::array<Complex, ZC_LENGTH> jsonToComplexArray(const std::string &json);
-    Complex correlation(Complex &input);
+    Complex correlation(Complex input);
 
     void generateCarrierArray(int fc);
 };
