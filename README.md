@@ -1,1 +1,22 @@
-![tracker drawio](https://github.com/izumisagirii/NeoTracker/assets/53885068/149c1d38-161d-455c-a9bd-17b65c07acef)
+[app.pdf](https://github.com/izumisagirii/NeoTracker/files/15314403/app.pdf)
+## Abstract
+
+In the rapidly evolving landscape of virtual reality
+and the Internet of Things (IoT), The growth of edge computing
+has reached remarkable heights. Our study presents a new
+approach to acoustic-based localization that capitalizes on the
+ubiquity of smartphones, converting them into advanced instruments for human-computer interaction. This represents a significant departure from previous systems that demanded multiple
+speakers, complex equipment, and considerable computational
+power. Our refined method enables accurate and immediate onedimensional (1D) and two-dimensional (2D) finger tracking with
+the use of ordinary smartphones.
+
+
+Our system emits ultrasonic waves from a smartphone, undetectable by humans. We designed precise algorithms to analyze
+ultrasonic wavefronts to detect the echoes and discern localization cues. We use the Zadoff-Chu (ZC) sequence, modulated
+through the Phase Shift Keying (PSK) technique. In synergy,
+a Moving Target Indicator (MTI) filter is employed to restrain
+background reflections and extract target echoes. Experimental
+results demonstrate that our solution can precisely track the
+1D and 2D positions. Our system exemplifies the integration of
+acoustic sensing within the IoT framework, unleashing significant
+potential for applications.
