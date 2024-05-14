@@ -5,14 +5,14 @@ In the rapidly evolving landscape of virtual reality
 and the Internet of Things (IoT), The growth of edge computing
 has reached remarkable heights. Our study presents a new
 approach to acoustic-based localization that capitalizes on the
-ubiquity of smartphones, converting them into advanced instruments for human-computer interaction. This represents a significant departure from previous systems that demanded multiple
+ubiquity of smartphones, converting them into advanced instruments for human-computer interaction. This represents a significant departure from previous systems that demanded multiple
 speakers, complex equipment, and considerable computational
-power. Our refined method enables accurate and immediate onedimensional (1D) and two-dimensional (2D) finger tracking with
+power. Our refined method enables accurate and immediate onedimensional (1D) and two-dimensional (2D) finger tracking with
 the use of ordinary smartphones.
 
 
-Our system emits ultrasonic waves from a smartphone, undetectable by humans. We designed precise algorithms to analyze
-ultrasonic wavefronts to detect the echoes and discern localization cues. We use the Zadoff-Chu (ZC) sequence, modulated
+Our system emits ultrasonic waves from a smartphone, undetectable by humans. We designed precise algorithms to analyze
+ultrasonic wavefronts to detect the echoes and discern localization cues. We use the Zadoff-Chu (ZC) sequence, modulated
 through the Phase Shift Keying (PSK) technique. In synergy,
 a Moving Target Indicator (MTI) filter is employed to restrain
 background reflections and extract target echoes. Experimental
