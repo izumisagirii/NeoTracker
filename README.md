@@ -26,3 +26,7 @@ results demonstrate that our solution can precisely track the
 1D and 2D positions. Our system exemplifies the integration of
 acoustic sensing within the IoT framework, unleashing significant
 potential for applications.
+
+## TODO
+
+Add more configurations and migration to different scenarios
